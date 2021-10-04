@@ -3,7 +3,7 @@ import string
 
 import itertools
 
-variables = []
+title = []
 
 data = []
 
@@ -97,7 +97,7 @@ def computeLogic(formula, name):
 	variable2 = formula[2]
 
 	values[name] = []
-	variables.append(name + ' = '  + formula)
+	title.append(name + ' = '  + formula)
 	
 	for i in range(len(values[variable1])):
 		
@@ -154,27 +154,24 @@ for i in range(variableCount):
 	variable = string.ascii_uppercase[alphabet]
 	alphabet += 1
 	
-	variables.append(variable)
+	title.append(variable)
 	values[variable] = []
 	for b in data:
 		values[variable].append(b[i])
 
 
 
-print(tabulate(data, headers=variables, tablefmt='orgtbl'))
+print(tabulate(data, headers=title, tablefmt='orgtbl'))
 
 
 while True:
 	cycle = 0
 	
-	input2 = input("Add formula, type 'no' to abbort")
-	print(input2)
+	input2 = input("Add formula, type 'no' to abbort\n")
 	
 	if input2 == 'no':
 		break
-		
-	#comman _change d = (AvB)
-	
+
 	#getting Sorted Bracket Dictonary
 	structure, alphabet = getStruct(input2, alphabet)
 	
@@ -192,7 +189,7 @@ while True:
 	#variables[-1] = 'F-' + str(cycle) + ' = ' + input2
 		
 		
-	print(tabulate(data, headers=variables, tablefmt='orgtbl'))
+	print(tabulate(data, headers=title, tablefmt='orgtbl'))
 	print(data)
 	print(values)
 		
