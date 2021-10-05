@@ -3,14 +3,13 @@ import string
 
 import itertools
 
-title = []
-
-data = []
-
 values = {}
 
+formulas = {}
 
 
+
+numbers = 0
 
 alphabet = 0
 
@@ -26,13 +25,14 @@ def getStruct(struct, alphabet):
 	maxdephth = 0
 	
 	samedephth = None
+
 	
 	
 	while True:
 		
 		#when to stop simplifying
 		if '(' not in struct:
-			identifier = string.ascii_lowercase[alph]
+			identifier = string.ascii_uppercase[alph]
 			structure[identifier] = "(" + struct + ")"
 			alph += 1
 			break
@@ -62,8 +62,45 @@ def getStruct(struct, alphabet):
 				
 			#at index where the bracket closes add 'new var' : '(formula)' to structure
 			if maxdephth == samedephth:
+				formula = struct[start-1:i+1]
+
+				#search for not operands in formula
+				operand = "n"
+				positions = [pos for pos, char in enumerate(formula) if char == operand]
+
+				for i in positions:
+					name = numbers
+					numbers += 1
+					values[name] = []
+
+					#negate the variable with a not operand
+					for b in values[struct[i + 1]]:
+						if b == 0:
+							values[name].append(1)
+						else: 
+							values[name].append(0)
+
+					#add formula to dic
+					formulas[name] = formula[i] + formula[i + 1]
+				
+				if struct[start-2] == "n":
+					computeLogic(struct[start:i], numbers)
+
+					holder = []
+					for i in values[numbers]:
+						if i == 0:
+							holder.append(1)
+						else: 
+							holder.append(0)
+					values[numbers + 1] = holder
+
+					numbers += 2
+
+
+				#if there are no negated variables and no negation before the Formula
+				if positions == []:
 				Identifier = string.ascii_lowercase[alph]
-				structure[Identifier] = struct[start-1:i+1]
+				structure[Identifier] = struct[formula]
 				samedephth=None
 				alph +=1
 				
@@ -97,7 +134,6 @@ def computeLogic(formula, name):
 	variable2 = formula[2]
 
 	values[name] = []
-	title.append(name + ' = '  + formula)
 	
 	for i in range(len(values[variable1])):
 		
@@ -108,30 +144,23 @@ def computeLogic(formula, name):
 		if operand == 'v':
 			if  value1 == 0 and value2 == 0:
 				values[name].append(0)
-				data[i].append(0)
 				
 			else:
 				values[name].append(1)
-				data[i].append(1)
 					
 					
 		if operand == '^':
 			if value1 == 1 and value2 == 1:
 				values[name].append(1)
-				data[i].append(1)
 			else:
 				values[name].append(0)
-				data[i].append(0)
 	
 		
 		if operand == '>':
 			if value1 == 1 and value2 == 0:
 				values[name].append(0)
-				data[i].append(0)
 			else:
 				values[name].append(1)
-				data[i].append(1)
-					
 					
 	
 #get variableCount
@@ -154,14 +183,13 @@ for i in range(variableCount):
 	variable = string.ascii_uppercase[alphabet]
 	alphabet += 1
 	
-	title.append(variable)
 	values[variable] = []
 	for b in data:
 		values[variable].append(b[i])
 
 
 
-print(tabulate(data, headers=title, tablefmt='orgtbl'))
+print(tabulate(values, headers="keys", tablefmt='orgtbl'))
 
 
 while True:
@@ -171,6 +199,9 @@ while True:
 	
 	if input2 == 'no':
 		break
+
+	input2 = input2.replace(" ", "")
+
 
 	#getting Sorted Bracket Dictonary
 	structure, alphabet = getStruct(input2, alphabet)
@@ -189,7 +220,7 @@ while True:
 	#variables[-1] = 'F-' + str(cycle) + ' = ' + input2
 		
 		
-	print(tabulate(data, headers=title, tablefmt='orgtbl'))
+	print(tabulate(values, headers="keys", tablefmt='orgtbl'))
 	print(data)
 	print(values)
 		
