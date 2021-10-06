@@ -17,14 +17,15 @@ alphabet = 0
 	
 
 def getStruct(struct, alphabet):
-	alph = alphabet
 	
-	#
-	structure = {}
+	alph = alphabet
 	
 	maxdephth = 0
 	
 	samedephth = None
+
+
+	matches = ["v", "^", ">"]
 
 	
 	
@@ -32,9 +33,29 @@ def getStruct(struct, alphabet):
 		
 		#when to stop simplifying
 		if '(' not in struct:
-			identifier = string.ascii_uppercase[alph]
-			structure[identifier] = "(" + struct + ")"
-			alph += 1
+			if "n" in struct:
+				formula = struct
+				operand = "n"
+				positions = [pos for pos, char in enumerate(formula) if char == operand]
+
+				for i in positions:
+					if any(x in struct for x in matches):
+						print("found operand")
+						name = string.ascii_lowercase[alph]
+					else:
+						name = string.ascii_uppercase[alph]
+					alph += 1
+
+					#add formula to dic
+					formulas[name] = "(" + formula[i] + formula[i + 1] + ")"
+					struct = struct.replace(formula[i] + formula[i + 1], name)
+				
+				
+			if any(x in struct for x in matches):
+				identifier = string.ascii_uppercase[alph]
+				formulas[identifier] = "(" + struct + ")"
+				alph += 1
+				break
 			break
 		
 		
@@ -63,77 +84,61 @@ def getStruct(struct, alphabet):
 			#at index where the bracket closes add 'new var' : '(formula)' to structure
 			if maxdephth == samedephth:
 				formula = struct[start-1:i+1]
+				if "n" in formula:
+					#search for not operands in formula
+					operand = "n"
+					positions = [pos for pos, char in enumerate(formula) if char == operand]
 
-				#search for not operands in formula
-				operand = "n"
-				positions = [pos for pos, char in enumerate(formula) if char == operand]
+					for i in positions:
+						name = string.ascii_lowercase[alph]
+						alph += 1
 
-				for i in positions:
-					name = numbers
-					numbers += 1
-					values[name] = []
-
-					#negate the variable with a not operand
-					for b in values[struct[i + 1]]:
-						if b == 0:
-							values[name].append(1)
-						else: 
-							values[name].append(0)
-
-					#add formula to dic
-					formulas[name] = formula[i] + formula[i + 1]
-				
-				if struct[start-2] == "n":
-					computeLogic(struct[start:i], numbers)
-
-					holder = []
-					for i in values[numbers]:
-						if i == 0:
-							holder.append(1)
-						else: 
-							holder.append(0)
-					values[numbers + 1] = holder
-
-					numbers += 2
-
-
-				#if there are no negated variables and no negation before the Formula
-				if positions == []:
-				Identifier = string.ascii_lowercase[alph]
-				structure[Identifier] = struct[formula]
-				samedephth=None
-				alph +=1
+						#add formula to dic
+						formulas[name] = formula[i] + formula[i + 1]
+						
+				else:
+					Identifier = string.ascii_lowercase[alph]
+					formulas[Identifier] = formula
+					samedephth=None
+					alph +=1
 				
 		
 		#replace Identified formulas with variables
 		#(AvB)^(C>(A^B))
 		#  |        |
 		#  d  ^(C>  e)    	
-		for name in structure:
-			struct = struct.replace(structure[name], name)
+		for name in formulas:
+			struct = struct.replace(formulas[name], name)
 			
 		
 		print(struct)
 		print('/n-----/n')
-		print(structure)
+		print(formulas)
 			
 			
 			
 		
 			
-	return structure, alph
-	
-	
+	return alph
 	
 
 
 def computeLogic(formula, name):
+
+	values[name] = []
+
+	if "n" in formula:
+		for i in values[formula[1]]:
+
+			if i == 0:
+				values[name].append(1)
+			else:
+				values[name].append(0)
+		return
 	
 	variable1 = formula[0]
 	operand = formula[1]
 	variable2 = formula[2]
-
-	values[name] = []
 	
 	for i in range(len(values[variable1])):
 		
@@ -191,6 +196,7 @@ for i in range(variableCount):
 
 print(tabulate(values, headers="keys", tablefmt='orgtbl'))
 
+showSteps = False
 
 while True:
 	cycle = 0
@@ -203,26 +209,95 @@ while True:
 	input2 = input2.replace(" ", "")
 
 
-	#getting Sorted Bracket Dictonary
-	structure, alphabet = getStruct(input2, alphabet)
+	if input2 == 'showSteps=True':
+		showSteps = True
+		continue
+	elif input2 == 'showSteps=False':
+		showSteps = False
+		continue
+
 	
+
+
+	#getting Sorted Bracket Dictonary
+	alphabet = getStruct(input2, alphabet)
+	
+	print(formulas)
 	
 	
 	#compute logic tree
-	for i in structure:
+	for i in formulas:
 		#cut Brackets
-		structure[i] = structure[i][1:len(structure[i]) - 1]
+		holder = formulas[i].replace("(", "") 
+		holder = holder.replace(")", "")
+
+		print(i + "\n" + holder)
 		
-		computeLogic(structure[i], i)
+		computeLogic(holder, i)
 		
 		
 		
 	#variables[-1] = 'F-' + str(cycle) + ' = ' + input2
-		
-		
-	print(tabulate(values, headers="keys", tablefmt='orgtbl'))
-	print(data)
+
 	print(values)
+	copy = values
+	print(copy)
+
+	tablediv = {}
+
+	for i in values:
+		tablediv[i] = values[i]
+	
+
+	if showSteps == False:
+		for i in list(tablediv):
+			if i in string.ascii_lowercase:
+				del tablediv[i]
+	
+	for i in range(20):
+		print("\n - \n")
+		print(tablediv)
+		print("\n - \n")
+		found = False
+		for y in list(tablediv):
+			print("checking {}".format(y))
+			for x in list(y):
+				print("---  checking {}".format(x))
+				for z in formulas:
+					if z == x:
+						print("found")
+						print("bevore")
+						print(str(tablediv) + "         " + str(values))
+						try:
+							tablediv[y.replace(z, formulas[z])] = tablediv.pop(y)
+
+							print("after")
+							print(str(tablediv) + "         " + str(values))
+							found = True
+							continue
+						except:
+							pass
+
+		
+		if found == False:
+			break
+
+	print(copy)
+	print(values)
+	values = copy
+		
+		
+	 
+
+	
+
+
+		
+	print(tabulate(tablediv, headers="keys", tablefmt='orgtbl'))
+	print(tabulate(values, headers="keys", tablefmt="fancy_grid"))
+	print(formulas)
+	print(values)
+	print(tablediv)
 		
 	
 		
