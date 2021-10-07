@@ -92,7 +92,7 @@ def getStruct(struct, alphabet):
 					for i in positions:
 						name = string.ascii_lowercase[alph]
 						alph += 1
-
+						
 						#add formula to dic
 						formulas[name] = formula[i] + formula[i + 1]
 						
